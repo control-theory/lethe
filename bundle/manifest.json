@@ -1,0 +1,57 @@
+{
+  "manifest_version": "0.3",
+  "name": "lethe",
+  "display_name": "Memory",
+  "version": "0.1.0",
+  "description": "Local graph-based memory for Claude with ACT-R-style decay.",
+  "long_description": "A knowledge graph that persists facts, people, projects, and preferences across conversations. Memories reinforce when used and fade when ignored. Ships with a local web dashboard.",
+  "author": {
+    "name": "Eric / ControlTheory"
+  },
+  "icon": "icon.png",
+  "server": {
+    "type": "binary",
+    "entry_point": "server/lethe-${os}-${arch}",
+    "mcp_config": {
+      "command": "server/lethe-${os}-${arch}",
+      "args": ["--stdio"],
+      "env": {}
+    }
+  },
+  "tools": [
+    { "name": "remember",       "description": "Store a memory — a fact, preference, person, or entity." },
+    { "name": "recall",         "description": "Search stored memories by keyword or phrase." },
+    { "name": "update_memory",  "description": "Edit an existing memory." },
+    { "name": "forget",         "description": "Soft-forget or permanently delete a memory." },
+    { "name": "pin",            "description": "Pin a memory so it never decays." },
+    { "name": "unpin",          "description": "Unpin a memory to allow normal decay." },
+    { "name": "link",           "description": "Create a named relation between two memories." },
+    { "name": "unlink",         "description": "Remove a relation between memories." },
+    { "name": "get_context",    "description": "Fetch the subgraph around a memory." },
+    { "name": "list_recent",    "description": "List recently created or reinforced memories." },
+    { "name": "stats",          "description": "Get memory system statistics." }
+  ],
+  "user_config": {
+    "half_life_days": {
+      "type": "number",
+      "title": "Memory half-life (days)",
+      "description": "How fast unused memories fade. Default 30.",
+      "default": 30
+    },
+    "dashboard_port": {
+      "type": "number",
+      "title": "Dashboard port",
+      "description": "Local port for the web dashboard. 0 = auto-assign.",
+      "default": 0
+    },
+    "auto_open_dashboard": {
+      "type": "boolean",
+      "title": "Auto-open dashboard on first install",
+      "default": true
+    }
+  },
+  "compatibility": {
+    "platforms": ["darwin", "win32", "linux"],
+    "runtimes": {}
+  }
+}

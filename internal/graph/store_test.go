@@ -314,8 +314,9 @@ func TestReinforce(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if got.Strength != 2.0 {
-		t.Errorf("strength = %v, want 2.0", got.Strength)
+	// Allow tiny floating point tolerance from decay computation
+	if got.Strength < 1.99 || got.Strength > 2.01 {
+		t.Errorf("strength = %v, want ~2.0", got.Strength)
 	}
 	if got.AccessCount != 2 {
 		t.Errorf("access_count = %d, want 2", got.AccessCount)

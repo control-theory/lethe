@@ -90,6 +90,8 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("GET /api/stats", s.handleStats)
 	s.mux.HandleFunc("GET /api/events", s.handleEvents)
 	s.mux.HandleFunc("GET /api/graph", s.handleGraph)
+	s.mux.HandleFunc("GET /api/export", s.handleExport)
+	s.mux.HandleFunc("POST /api/import", s.handleImport)
 
 	// Frontend
 	s.mux.HandleFunc("GET /", s.handleIndex)

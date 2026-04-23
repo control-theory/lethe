@@ -1,6 +1,7 @@
 package dashboard
 
 import (
+	"context"
 	"encoding/json"
 	"net/http"
 	"testing"
@@ -22,7 +23,7 @@ func testDashboard(t *testing.T) (*Server, string) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Cleanup(func() { dash.Stop(nil) })
+	t.Cleanup(func() { dash.Stop(context.TODO()) })
 
 	base := "http://127.0.0.1:" + itoa(port)
 	return dash, base

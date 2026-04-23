@@ -205,3 +205,29 @@ func (s *Server) handleGraph(w http.ResponseWriter, r *http.Request) {
 		"edges": edges,
 	})
 }
+
+func (s *Server) handleExport(w http.ResponseWriter, r *http.Request) {
+	data, err := s.store.ExportJSON(r.Context())
+	if err != nil {
+		writeError(w, 500, err.Error())
+		return
+	}
+	w.Header().Set("Content-Type", "application/json")
+	w.Header().Set("Content-Disposition", "attachment; filename=lethe-export.json")
+	w.WriteHeader(200)
+	w.Write(data)
+}
+
+func (s *Server) handleImport(w http.ResponseWriter, r *http.Request) {
+	var data graph.ExportData
+	if err := json.NewDecoder(r.Body).Decode(&data); err != nil {
+		writeError(w, 400, "invalid JSON: "+err.Error())
+		return
+	}
+	imported, err := s.store.Import(r.Context(), &data)
+	if err != nil {
+		writeError(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 200, map[string]any{"imported": imported})
+}
