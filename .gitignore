@@ -3,3 +3,7 @@ bin/
 *.db-wal
 *.db-shm
 .DS_Store
+SPEC.md
+CLAUDE.md
+.gitignore
+lethe
