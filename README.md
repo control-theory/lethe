@@ -19,6 +19,21 @@ Local graph-based memory for Claude. Memories reinforce when used and fade when 
 
 Download `lethe-0.1.0.mcpb` from Releases. Double-click to install in Claude Desktop.
 
+### Build the MCPB bundle from source
+
+```bash
+# Install the MCPB packaging tool
+npm install -g @anthropic-ai/mcpb
+
+# Cross-compile + stage the bundle
+make bundle
+
+# Pack into a .mcpb file
+mcpb pack bundle/
+```
+
+This produces `lethe-0.1.0.mcpb` — a single file you can double-click to install in Claude Desktop. It contains binaries for macOS (arm64 + amd64), Linux (amd64), and Windows (amd64).
+
 ### Claude Code
 
 ```bash

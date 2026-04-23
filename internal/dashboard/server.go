@@ -86,6 +86,7 @@ func (s *Server) registerRoutes() {
 	s.mux.HandleFunc("DELETE /api/nodes/{id}/pin", s.handleUnpinNode)
 	s.mux.HandleFunc("GET /api/nodes/{id}/edges", s.handleNodeEdges)
 	s.mux.HandleFunc("GET /api/edges", s.handleListEdges)
+	s.mux.HandleFunc("POST /api/edges", s.handleCreateEdge)
 	s.mux.HandleFunc("DELETE /api/edges/{id}", s.handleDeleteEdge)
 	s.mux.HandleFunc("GET /api/stats", s.handleStats)
 	s.mux.HandleFunc("GET /api/events", s.handleEvents)

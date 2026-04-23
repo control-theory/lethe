@@ -205,9 +205,22 @@ async function showDetail(id) {
     edges.forEach(e => {
       const other = e.src_id === id ? e.dst_id : e.src_id;
       const dir = e.src_id === id ? '→' : '←';
-      html += '<div class="val" style="cursor:pointer" onclick="showDetail(\'' + other + '\')">' + dir + ' ' + esc(String(e.relation)) + ' <a>' + other.substring(0,8) + '...</a></div>';
+      html += '<div class="val" style="display:flex;align-items:center;gap:6px">';
+      html += '<span style="cursor:pointer" onclick="showDetail(\'' + other + '\')">' + dir + ' ' + esc(String(e.relation)) + ' <a>' + other.substring(0,8) + '...</a></span>';
+      html += '<button class="danger" style="padding:2px 6px;font-size:11px" onclick="removeEdge(\'' + e.id + '\',\'' + id + '\')">x</button>';
+      html += '</div>';
     });
   }
+  // Link creation form
+  html += '<label style="margin-top:16px">Add connection</label>';
+  html += '<div style="display:flex;gap:6px;margin-top:4px;flex-wrap:wrap">';
+  html += '<input type="text" id="link-target" placeholder="Target name or ID" style="width:140px;font-size:12px">';
+  html += '<select id="link-relation" style="font-size:12px">';
+  const rels = ['related_to','knows','works_on','works_at','located_in','part_of','caused','mentioned','prefers','opposes','participated_in','created','depends_on'];
+  rels.forEach(r => { html += '<option value="' + r + '">' + r + '</option>'; });
+  html += '</select>';
+  html += '<button onclick="createLink(\'' + id + '\')" style="font-size:12px">Link</button>';
+  html += '</div>';
   document.getElementById('detail-content').innerHTML = html;
   document.getElementById('detail-pane').classList.add('open');
 }
@@ -222,6 +235,33 @@ async function deleteNode(id, hard) {
   if (!confirm(hard ? 'Permanently delete this memory?' : 'Soft-forget this memory?')) return;
   await fetch(API + '/api/nodes/' + id + (hard ? '?hard=true' : ''), {method:'DELETE'});
   closeDetail(); loadNodes(); loadStats();
+}
+
+async function createLink(fromId) {
+  const target = document.getElementById('link-target').value.trim();
+  const relation = document.getElementById('link-relation').value;
+  if (!target) return;
+  // Try to resolve the target — could be an ID or a name
+  let toId = target;
+  // If it doesn't look like a ULID (26 chars, uppercase), search by name
+  if (target.length !== 26 || target !== target.toUpperCase()) {
+    const r = await fetch(API + '/api/nodes?q=' + encodeURIComponent(target) + '&limit=1');
+    const nodes = await r.json();
+    if (nodes.length === 0) { alert('No memory found matching: ' + target); return; }
+    toId = nodes[0].id;
+  }
+  const r = await fetch(API + '/api/edges', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({src_id: fromId, dst_id: toId, relation: relation})
+  });
+  if (!r.ok) { const e = await r.json(); alert(e.error || 'Failed'); return; }
+  showDetail(fromId); loadStats();
+}
+
+async function removeEdge(edgeId, nodeId) {
+  await fetch(API + '/api/edges/' + edgeId, {method:'DELETE'});
+  showDetail(nodeId); loadStats();
 }
 
 // Graph
@@ -283,6 +323,16 @@ async function loadFading() {
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
 function debounce(fn, ms) { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+// Auto-refresh every 10 seconds
+let refreshInterval = setInterval(() => {
+  loadStats();
+  loadNodes();
+  // Refresh the active tab's content
+  const active = document.querySelector('.tab.active');
+  if (active && active.dataset.tab === 'timeline') loadTimeline();
+  if (active && active.dataset.tab === 'fading') loadFading();
+}, 10000);
 
 // Init
 loadStats();

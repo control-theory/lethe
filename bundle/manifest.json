@@ -1,7 +1,7 @@
 {
   "manifest_version": "0.3",
   "name": "lethe",
-  "display_name": "Memory",
+  "display_name": "Lethe Memory System",
   "version": "0.1.0",
   "description": "Local graph-based memory for Claude with ACT-R-style decay.",
   "long_description": "A knowledge graph that persists facts, people, projects, and preferences across conversations. Memories reinforce when used and fade when ignored. Ships with a local web dashboard.",
@@ -11,9 +11,9 @@
   "icon": "icon.png",
   "server": {
     "type": "binary",
-    "entry_point": "server/lethe-${os}-${arch}",
+    "entry_point": "server/lethe",
     "mcp_config": {
-      "command": "server/lethe-${os}-${arch}",
+      "command": "${__dirname}/server/lethe",
       "args": ["--stdio"],
       "env": {}
     }
@@ -47,6 +47,7 @@
     "auto_open_dashboard": {
       "type": "boolean",
       "title": "Auto-open dashboard on first install",
+      "description": "Whether to open the web dashboard in your browser when lethe starts for the first time.",
       "default": true
     }
   },

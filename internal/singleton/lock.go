@@ -30,7 +30,7 @@ func New(lockPath string) *Leader {
 
 // TryAcquire attempts to become the leader via a non-blocking lock.
 // Returns true if this process is now the leader.
-func (l *Leader) TryAcquire(pid int, port int) (bool, error) {
+func (l *Leader) TryAcquire(pid int) (bool, error) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 
@@ -41,17 +41,28 @@ func (l *Leader) TryAcquire(pid int, port int) (bool, error) {
 	l.isLeader = locked
 
 	if locked {
-		// Write PID and port to the lockfile for followers to read.
-		content := fmt.Sprintf("%d\n%d\n", pid, port)
-		if err := os.WriteFile(l.lockPath+".info", []byte(content), 0o644); err != nil {
-			slog.Warn("failed to write lock info", "error", err)
-		}
+		l.writeInfo(pid, 0)
 		slog.Info("acquired leader lock", "pid", pid)
 	} else {
 		slog.Info("another process is leader, running as follower")
 	}
 
 	return locked, nil
+}
+
+// SetPort updates the info file with the dashboard port.
+// Call this after the dashboard has started and you know the port.
+func (l *Leader) SetPort(pid, port int) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.writeInfo(pid, port)
+}
+
+func (l *Leader) writeInfo(pid, port int) {
+	content := fmt.Sprintf("%d\n%d\n", pid, port)
+	if err := os.WriteFile(l.lockPath+".info", []byte(content), 0o644); err != nil {
+		slog.Warn("failed to write lock info", "error", err)
+	}
 }
 
 // IsLeader returns whether this process currently holds the lock.
@@ -82,7 +93,7 @@ func (l *Leader) LeaderInfo() (pid int, port int, err error) {
 	return pid, port, nil
 }
 
-// Release releases the leader lock.
+// Release releases the leader lock and cleans up the info file.
 func (l *Leader) Release() error {
 	l.mu.Lock()
 	defer l.mu.Unlock()

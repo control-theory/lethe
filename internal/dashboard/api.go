@@ -175,6 +175,37 @@ func (s *Server) handleEvents(w http.ResponseWriter, r *http.Request) {
 	writeJSON(w, 200, events)
 }
 
+func (s *Server) handleCreateEdge(w http.ResponseWriter, r *http.Request) {
+	var req struct {
+		SrcID    string  `json:"src_id"`
+		DstID    string  `json:"dst_id"`
+		Relation string  `json:"relation"`
+		Weight   float64 `json:"weight"`
+	}
+	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+		writeError(w, 400, "invalid JSON")
+		return
+	}
+	if req.SrcID == "" || req.DstID == "" {
+		writeError(w, 400, "src_id and dst_id are required")
+		return
+	}
+	if req.Relation == "" {
+		req.Relation = "related_to"
+	}
+	e := &graph.Edge{
+		SrcID:    req.SrcID,
+		DstID:    req.DstID,
+		Relation: graph.RelationType(req.Relation),
+		Weight:   req.Weight,
+	}
+	if err := s.store.CreateEdge(r.Context(), e); err != nil {
+		writeError(w, 500, err.Error())
+		return
+	}
+	writeJSON(w, 201, e)
+}
+
 func (s *Server) handleDeleteEdge(w http.ResponseWriter, r *http.Request) {
 	id := r.PathValue("id")
 	if err := s.store.DeleteEdge(r.Context(), id); err != nil {
